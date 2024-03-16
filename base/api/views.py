@@ -1,8 +1,6 @@
 from django.http import JsonResponse
 from rest_framework.response import Response
 from rest_framework.decorators import api_view,permission_classes
-from rest_framework_simplejwt.serializers import TokenObtainPairSerializer
-from rest_framework_simplejwt.views import TokenObtainPairView
 from django.contrib.auth.models import User
 from .serializers import SignUpSerializer,UserSerializer
 from rest_framework.permissions import IsAuthenticated
@@ -12,26 +10,29 @@ from django.contrib.auth.models import User
 from base.models import Post,Profile
 from base.serializer import PostSerializer,ProfileSerializer
 from django.contrib.auth.models import Group
-from rest_framework import serializers
-import json
-class MyTokenObtainPairSerializer(TokenObtainPairSerializer):
-    @classmethod
-    def get_token(cls, user):
-        token = super().get_token(user)
-        # Add custom claims
-        token['username'] = user.username
-        token['email'] = user.email
-        token['groups'] = user.groups.name
-        # ...
+from .serializers import CustomTokenObtainPairSerializer
+from rest_framework.exceptions import AuthenticationFailed
+from rest_framework.views import APIView
 
-        return token
 
-class MyTokenObtainPairView(TokenObtainPairView):
-    serializer_class = MyTokenObtainPairSerializer
+class CustomTokenObtainPairView(APIView):
+    def post(self, request, *args, **kwargs):
+        serializer = CustomTokenObtainPairSerializer(data=request.data)
+        try:
+            serializer.is_valid(raise_exception=True)
+        except AuthenticationFailed as e:
+            return Response({
+                'status': False,
+                'message': "Incorrect username or password"
+            }, status=status.HTTP_400_BAD_REQUEST)
+        return Response(serializer.validated_data, status=status.HTTP_200_OK)
+
+
 
 @api_view(['GET'])
 def Routes(request):
     Route = [
+         'Get_Profiles/',
          '/token/',
          '/token/refresh/',
          'register/',
@@ -40,6 +41,18 @@ def Routes(request):
     ]
     return Response(Route)
 
+@api_view(['GET'])
+@permission_classes([IsAuthenticated])
+def Get_all_Profiles(request):
+    if request.method == 'GET':
+        if not request.user.groups.filter(name='Admin').exists():
+            return Response({"Info":"you are not allowed to access"},status=status.HTTP_400_BAD_REQUEST)
+        profiles = Profile.objects.all()
+        serializer = ProfileSerializer(profiles,many=True)
+        return Response(serializer.data,status=status.HTTP_200_OK)
+    else:
+        return Response({"Info":"This is not a GET request"},status=status.HTTP_401_UNAUTHORIZED)
+        
 
 
 @api_view(['POST'])
@@ -63,7 +76,7 @@ def register(request):
             return Response({'Error':'Account Already Exists'},status=status.HTTP_400_BAD_REQUEST)
     else : 
         return Response(user.errors)
-    
+   
 
 @api_view(['GET'])
 @permission_classes([IsAuthenticated])

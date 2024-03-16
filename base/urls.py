@@ -13,4 +13,13 @@ urlpatterns = [
     path('comments/',views.showallcomment,name="showallcomment"),
     path('like_comment/<str:pk>/',views.like_comment,name="like_comment"),
     path('dislike_comment/<str:pk>/',views.dislike_comment,name="dislike_comment"),
+    #added 
+    path('Update_Profile/',views.update_profile,name="update_profile"),
+    path('Create_Event/',views.create_event,name="create_event"),
+    path('Update_Event/<str:pk>/',views.update_event,name="update_event"),
+    path('Delete_event/<str:pk>/',views.delete_event,name="delete_event"),
+    path('Show_event/',views.Show_Event,name="Show_Event"),
+    path('Enroll_Event/<str:pk>/',views.Enroll_Event,name="Enroll_Event"),
+    path('Search_Profile/',views.search_profiles,name="Search_Profile"),
+
 ]

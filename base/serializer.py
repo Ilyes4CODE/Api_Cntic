@@ -1,5 +1,5 @@
 from rest_framework import serializers
-from .models import Post,Comment,Profile
+from .models import Post,Comment,Profile,Event
 
 
 class PostSerializer(serializers.ModelSerializer):
@@ -37,3 +37,14 @@ class ProfileSerializer(serializers.ModelSerializer):
             'email' :{'required': True },
             'phone' : {'required': False},
         }
+
+
+class UpadteProfileSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = Profile
+        fields = ['name', 'picture', 'email', 'phone', 'univ_id']
+
+class EventSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = Event
+        fields = ['id', 'Title', 'Description', 'image', 'count', 'enrolled_users']

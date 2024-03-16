@@ -43,7 +43,14 @@ class Post(models.Model):
 
 
 class Event(models.Model):
+    Title = models.CharField(null=True, max_length=50)
+    Description = models.CharField(null=True, max_length=150)
+    image = models.ImageField(upload_to='event_images/', null=True)
     count = models.IntegerField()
-    enrolled_users = models.ManyToManyField(User)
+    enrolled_users = models.ManyToManyField(User,blank=True)
+
+    def __str__(self):
+        return self.Title
+    
 
 
