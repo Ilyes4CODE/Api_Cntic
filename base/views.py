@@ -6,22 +6,142 @@ from rest_framework.decorators import api_view,permission_classes
 from rest_framework.permissions import IsAuthenticated
 from rest_framework import status
 from .models import Profile
+from .decorators import check_ban_status
 @api_view(['GET'])
 def ApiOverview(request):
+    """
+    Provides an overview of available API endpoints.
+
+    Returns:
+        Response: A list of available endpoints.
+    """
     apidocumentation = [
-        'Posts/',
-        'Get_By_Id/<str:pk>/',
-        'Create_Post/',
-        'Delete_Post/<str:pk>/',
-        'Update_Post/<str:pk>/',
-        'Like_Post/<str:pk>/',
-        'dislike_Post/<str:pk>/',
-        'comment/<str:pk>/',
-        'comments/',
-        'like_comment/<str:pk>/',
-        'dislike_comment/<str:pk>/',
-    ]
+            {
+                "Endpoint": "/Posts/",
+                "body": {},
+                "METHOD": "GET",
+                "Description": "Endpoint to retrieve all posts."
+            },
+            {
+                "Endpoint": "/Get_By_Id/<str:pk>/",
+                "body": {},
+                "METHOD": "GET",
+                "Description": "Endpoint to retrieve a post by its ID."
+            },
+            {
+                "Endpoint": "/Create_Post/",
+                "body": {
+                    "title": "string",
+                    "content": "string"
+                },
+                "METHOD": "POST",
+                "Description": "Endpoint to create a new post."
+            },
+            {
+                "Endpoint": "/Delete_Post/<str:pk>/",
+                "body": {},
+                "METHOD": "DELETE",
+                "Description": "Endpoint to delete a post by its ID."
+            },
+            {
+                "Endpoint": "/Update_Post/<str:pk>/",
+                "body": {
+                    "title": "string (optional)",
+                    "content": "string (optional)"
+                },
+                "METHOD": "PATCH",
+                "Description": "Endpoint to update a post by its ID. Supports partial updates."
+            },
+            {
+                "Endpoint": "/Like_Post/<str:pk>/",
+                "body": {},
+                "METHOD": "POST",
+                "Description": "Endpoint to like a post by its ID."
+            },
+            {
+                "Endpoint": "/dislike_Post/<str:pk>/",
+                "body": {},
+                "METHOD": "POST",
+                "Description": "Endpoint to dislike a post by its ID."
+            },
+            {
+                "Endpoint": "/comment/<str:pk>/",
+                "body": {
+                    "content": "string"
+                },
+                "METHOD": "POST",
+                "Description": "Endpoint to add a comment to a post by its ID."
+            },
+            {
+                "Endpoint": "/comments/",
+                "body": {},
+                "METHOD": "GET",
+                "Description": "Endpoint to retrieve all comments."
+            },
+            {
+                "Endpoint": "/like_comment/<str:pk>/",
+                "body": {},
+                "METHOD": "POST",
+                "Description": "Endpoint to like a comment by its ID."
+            },
+            {
+                "Endpoint": "/dislike_comment/<str:pk>/",
+                "body": {},
+                "METHOD": "POST",
+                "Description": "Endpoint to dislike a comment by its ID."
+            },
+            {
+                "Endpoint": "/Update_Profile/",
+                "body": {},
+                "METHOD": "PATCH",
+                "Description": "Endpoint to update user profile."
+            },
+            {
+                "Endpoint": "/Create_Event/",
+                "body": {},
+                "METHOD": "POST",
+                "Description": "Endpoint to create a new event."
+            },
+            {
+                "Endpoint": "/Update_Event/<str:pk>/",
+                "body": {},
+                "METHOD": "PATCH",
+                "Description": "Endpoint to update an event by its ID."
+            },
+            {
+                "Endpoint": "/Delete_event/<str:pk>/",
+                "body": {},
+                "METHOD": "DELETE",
+                "Description": "Endpoint to delete an event by its ID."
+            },
+            {
+                "Endpoint": "/Show_event/",
+                "body": {},
+                "METHOD": "GET",
+                "Description": "Endpoint to retrieve all events."
+            },
+            {
+                "Endpoint": "/Enroll_Event/<str:pk>/",
+                "body": {},
+                "METHOD": "POST",
+                "Description": "Endpoint to enroll in an event by its ID."
+            },
+            {
+                "Endpoint": "/Search_Profile/",
+                "body": {},
+                "METHOD": "GET",
+                "Description": "Endpoint to search profiles."
+            },
+            {
+                "Endpoint": "/Change_user_status/<str:pk>/",
+                "body": {},
+                "METHOD": "POST",
+                "Description": "Endpoint to ban or unban a user."
+            }
+        ]
+
     return Response(apidocumentation)
+
 
 
 @api_view(['GET'])
@@ -42,6 +162,7 @@ def Get_Posts_By_id(request,pk):
 
 @api_view(['POST'])
 @permission_classes([IsAuthenticated])
+@check_ban_status
 def Create_Post(request):
     data = request.data
     serializer = PostSerializer(data=data)
@@ -56,6 +177,7 @@ def Create_Post(request):
     
 @api_view(['DELETE'])
 @permission_classes([IsAuthenticated])
+@check_ban_status
 def Delete_Post(request,pk):
     post = get_object_or_404(Post,pk=pk)
     if post.author != request.user :
@@ -67,6 +189,7 @@ def Delete_Post(request,pk):
 
 @api_view(['PATCH'])
 @permission_classes([IsAuthenticated])
+@check_ban_status
 def Update_Post(request, pk):
     try:
         post = Post.objects.get(pk=pk)
@@ -87,6 +210,7 @@ def Update_Post(request, pk):
 
 @api_view(['POST'])
 @permission_classes([IsAuthenticated])
+@check_ban_status
 def like_post(request,pk):
     post = get_object_or_404(Post,pk=pk)
     if request.user in post.likers.all() and request.user not in post.dislikers.all():
@@ -103,6 +227,7 @@ def like_post(request,pk):
         
 @api_view(['POST'])
 @permission_classes([IsAuthenticated])
+@check_ban_status
 def dislike_post(request,pk):
     post = get_object_or_404(Post,pk=pk)
     if request.user in post.dislikers.all() and request.user not in post.likers.all():
@@ -116,6 +241,7 @@ def dislike_post(request,pk):
 
 @api_view(['POST'])
 @permission_classes([IsAuthenticated])
+@check_ban_status
 def comment(request,pk):
     post = get_object_or_404(Post, pk=pk)
     data = request.data
@@ -141,6 +267,7 @@ def showallcomment(request):
 
 @api_view(['POST'])
 @permission_classes([IsAuthenticated])
+@check_ban_status
 def like_comment(request,pk):
     comment = get_object_or_404(Comment,pk=pk)
     if request.user in comment.likers.all() and request.user not in comment.dislikers.all():
@@ -155,6 +282,7 @@ def like_comment(request,pk):
 
 @api_view(['POST'])
 @permission_classes([IsAuthenticated])
+@check_ban_status
 def dislike_comment(request,pk):
     comment = get_object_or_404(Comment, pk=pk)
     if request.user in comment.dislikers.all() and request.user not in comment.likers.all():
@@ -168,6 +296,7 @@ def dislike_comment(request,pk):
 #added new
 @api_view(['PATCH'])
 @permission_classes([IsAuthenticated])
+@check_ban_status
 def update_profile(request):
     user = request.user
     print(user)
@@ -217,15 +346,13 @@ def delete_event(request, pk):
 @api_view(['GET'])
 @permission_classes([IsAuthenticated])
 def Show_Event(request):
-    if not request.user.groups.filter(name='Admin').exists():
-        return Response({"error": "You do not have permission to delete events"}, status=status.HTTP_403_FORBIDDEN)
-    
     Events = Event.objects.all()
     serializer = EventSerializer(Events,many=True)
     return Response(serializer.data,status=status.HTTP_200_OK)
 
 @api_view(['POST'])
 @permission_classes([IsAuthenticated])
+@check_ban_status
 def Enroll_Event(request,pk):
     selected_event = get_object_or_404(Event,pk=pk)
     if request.method == 'POST':
@@ -246,16 +373,35 @@ def Enroll_Event(request,pk):
 
 @api_view(['GET'])
 @permission_classes([IsAuthenticated])
+@check_ban_status
 def search_profiles(request):
     search_query = request.query_params.get('query', None)
-
     if not request.user.groups.filter(name='User').exists():
         return Response({"error": "You do not have permission to search profiles"}, status=status.HTTP_403_FORBIDDEN)
 
+    profiles = Profile.objects.filter(user__groups__name='User')
     if search_query:
-        profiles = Profile.objects.filter(name__icontains=search_query)
-    else:
-        profiles = Profile.objects.all()
+        profiles = profiles.filter(name__icontains=search_query)
 
     serializer = ProfileSerializer(profiles, many=True)
     return Response(serializer.data)
+
+@api_view(['POST'])
+@permission_classes([IsAuthenticated])
+def change_user_status(request,pk):
+    if not request.user.groups.filter(name='Admin').exists():
+        return Response({"error": "You do not have permission to ban user"}, status=status.HTTP_403_FORBIDDEN)
+    
+    to_ban_profile = get_object_or_404(Profile,pk=pk)
+    if request.method == 'POST':
+        if to_ban_profile.is_banned == False:
+            to_ban_profile.is_banned = True
+            to_ban_profile.save()
+            return Response({"info":"user banned succesfully"},status=status.HTTP_200_OK)
+        elif to_ban_profile.is_banned == True:
+            to_ban_profile.is_banned = False
+            to_ban_profile.save()
+            return Response({"info":"user disbanned succesfully"},status=status.HTTP_200_OK)
+    else:
+        return Response({"info":"this is not a post request"},status=status.HTTP_400_BAD_REQUEST)
+

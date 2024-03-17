@@ -21,5 +21,7 @@ urlpatterns = [
     path('Show_event/',views.Show_Event,name="Show_Event"),
     path('Enroll_Event/<str:pk>/',views.Enroll_Event,name="Enroll_Event"),
     path('Search_Profile/',views.search_profiles,name="Search_Profile"),
+    path('Change_user_status/<str:pk>/',views.change_user_status,name="user_change_status"),
+    
 
 ]

@@ -29,7 +29,7 @@ class CommentSerializer(serializers.ModelSerializer):
 class ProfileSerializer(serializers.ModelSerializer):
     class Meta:
         model = Profile
-        fields = ('id','user','name','picture','email','phone','univ_id')
+        fields = ('id','user','name','picture','email','phone','is_banned','univ_id')
         extra_kwargs = {
             'name' : {'required': True },
             'user' : {'required': True },

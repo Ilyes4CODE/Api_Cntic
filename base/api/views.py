@@ -13,7 +13,7 @@ from django.contrib.auth.models import Group
 from .serializers import CustomTokenObtainPairSerializer
 from rest_framework.exceptions import AuthenticationFailed
 from rest_framework.views import APIView
-
+from base.decorators import check_ban_status
 
 class CustomTokenObtainPairView(APIView):
     def post(self, request, *args, **kwargs):
@@ -32,28 +32,51 @@ class CustomTokenObtainPairView(APIView):
 @api_view(['GET'])
 def Routes(request):
     Route = [
-         'Get_Profiles/',
-         '/token/',
-         '/token/refresh/',
-         'register/',
-         'CurrentUser/',
-         'Posts_User/',
+         {
+            "Endpoint":"/register/",
+            "body":{
+                    "first_name":"ilyes",
+                    "last_name": "bendaikha",
+                    "email":"ilyes043@gmail.com",
+                    "password":"ilyes123123",
+                    "univ_id":390505642,
+                    "phone":"0552704594"
+                    },
+            "METHOD":"POST",
+            "Description":"This endpoint is for register a new user"
+         },
+         {
+            "Endpoint":"/token/",
+            "body":{
+                "username":"ilyes043@gmail.com",
+                "password" : "ilyes123123"
+            },
+            "METHOD":"POST",
+            "Description":"this endpoint returns access token and refresh token to login"
+         },
+         {
+            "Endpoint":"/token/refresh/",
+            "body":{
+                "refresh":""
+            },
+            "METHOD":"POST",
+            "Description":"this endpoint returns a new access token and refresh token"
+         },
+         {
+            "Endpoint":"/Profile/",
+            "body":{},
+            "METHOD":"GET",
+            "Description":"This endpoint return to you the authenticated user profile"
+         },
+         {
+            "Endpoint":"/Posts_User/",
+            "body":{
+            },
+            "METHOD":"GET",
+            "Description":"This Enpoint return all the posts that related to the authenticated user"
+         },
     ]
     return Response(Route)
-
-@api_view(['GET'])
-@permission_classes([IsAuthenticated])
-def Get_all_Profiles(request):
-    if request.method == 'GET':
-        if not request.user.groups.filter(name='Admin').exists():
-            return Response({"Info":"you are not allowed to access"},status=status.HTTP_400_BAD_REQUEST)
-        profiles = Profile.objects.all()
-        serializer = ProfileSerializer(profiles,many=True)
-        return Response(serializer.data,status=status.HTTP_200_OK)
-    else:
-        return Response({"Info":"This is not a GET request"},status=status.HTTP_401_UNAUTHORIZED)
-        
-
 
 @api_view(['POST'])
 def register(request):
@@ -80,13 +103,7 @@ def register(request):
 
 @api_view(['GET'])
 @permission_classes([IsAuthenticated])
-def currentuser(request):
-    user = UserSerializer(request.user)
-    return Response(user.data)
-
-
-@api_view(['GET'])
-@permission_classes([IsAuthenticated])
+@check_ban_status
 def current_post_user(request):
     user = request.user
     posts = user.post_set.all()
@@ -95,6 +112,7 @@ def current_post_user(request):
 
 @api_view(['GET'])
 @permission_classes([IsAuthenticated])
+@check_ban_status
 def user_profile(request):
     user = request.user
     profile = Profile.objects.get(user=user)

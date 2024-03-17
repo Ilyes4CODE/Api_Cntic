@@ -8,6 +8,7 @@ class Profile(models.Model):
     email = models.EmailField(max_length=190, null=True)
     phone = models.CharField(max_length=15, null=True)
     univ_id = models.IntegerField(null=True)
+    is_banned = models.BooleanField(default=False)
     created_at = models.DateTimeField(auto_now_add=True)
     def __str__(self):
         return self.name
@@ -52,5 +53,4 @@ class Event(models.Model):
     def __str__(self):
         return self.Title
     
-
 
